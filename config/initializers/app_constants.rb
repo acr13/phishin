@@ -8,17 +8,6 @@ FIRST_CHAR_LIST = ('A'..'Z').to_a + ['#']
 MAX_PLAYLISTS_PER_USER = 20
 MIN_SEARCH_TERM_LENGTH = 3
 
-APP_CONTENT_PATH =
-  if Rails.env.test?
-    Rails.root.join('tmp/content')
-  elsif ENV['IN_DOCKER']
-    '/content'
-  else
-    ENV['APP_CONTENT_PATH']
-  end
-
-IMPORT_DIR = "#{APP_CONTENT_PATH}/import"
-
 APP_BASE_URL =
   if Rails.env.in?(%w[development test])
     'http://localhost'

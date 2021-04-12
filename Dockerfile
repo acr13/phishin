@@ -18,7 +18,7 @@ RUN gem install bundler && bundle install
 COPY . .
 
 # Symlink audio files to Rails public folder
-RUN ln -sf /content/tracks/audio_files ./public/audio
+RUN ln -sf /content/activestorage/tracks/audio_files ./public/audio
 
 EXPOSE 3000
 CMD bundle exec puma -b tcp://0.0.0.0:3000

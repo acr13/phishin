@@ -21,7 +21,7 @@ class ShowImporter::Orchestrator
 
   def analyze_filenames
     puts 'Analyzing filenames...'
-    @fm = ShowImporter::FilenameMatcher.new("#{IMPORT_DIR}/#{date}")
+    @fm = ShowImporter::FilenameMatcher.new("#{ENV['IMPORT_PATH']}/#{date}")
   end
 
   def find_venue
@@ -91,10 +91,13 @@ class ShowImporter::Orchestrator
   private
 
   def update_track(track)
-    track.update!(
-      show: @show,
-      audio_file: File.new("#{@fm.s_dir}/#{track.filename}")
+    track.update!(show: @show)
+    track.audio_file.attach(
+      io: File.open("#{@fm.s_dir}/#{track.filename}"),
+      filename: track.filename,
+      content_type: 'audio/mpeg'
     )
+    track.save_duration
     track.apply_id3_tags
   end
 

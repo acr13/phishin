@@ -20,11 +20,11 @@ namespace :shows do
   task import: :environment do
     require "#{Rails.root}/app/services/show_importer/show_importer"
 
-    dates = Dir.entries(IMPORT_DIR).select do |entry|
-      File.directory?(File.join(IMPORT_DIR, entry)) &&
+    dates = Dir.entries(ENV['IMPORT_PATH']).select do |entry|
+      File.directory?(File.join(ENV['IMPORT_PATH'], entry)) &&
         /\A\d{4}\-\d{2}\-\d{2}\z/.match?(entry)
     end
-    next puts "No shows found in #{IMPORT_DIR}" unless dates.any?
+    next puts "No shows found in #{ENV['IMPORT_PATH']}" unless dates.any?
 
     puts "#{dates.size} show folders found"
     dates.each do |date|

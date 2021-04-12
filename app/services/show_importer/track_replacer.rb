@@ -36,9 +36,9 @@ class ShowImporter::TrackReplacer
 
   def replace_audio_on_tracks
     track_hash.sort.each do |filename, track|
-      full_path = "#{IMPORT_DIR}/#{date}/#{filename}"
-      track.audio_file = File.open(full_path, 'rb')
-      track.save
+      full_path = "#{ENV['IMPORT_PATH']}/#{date}/#{filename}"
+      track.audio_file.purge
+      track.audio_file.attach(io: File.open(full_path), filename: filename, content_type: 'audio/mpeg')
       track.save_duration
       track.apply_id3_tags
       puts "#{track.position}. #{track.title} (#{track.id}) replaced with `#{filename}`"
@@ -81,7 +81,7 @@ class ShowImporter::TrackReplacer
   end
 
   def dir
-    @dir ||= "#{::IMPORT_DIR}/#{date}"
+    @dir ||= "#{ENV['IMPORT_PATH']}/#{date}"
   end
 
   def filenames

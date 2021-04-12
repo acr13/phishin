@@ -5,9 +5,18 @@ FactoryBot.define do
     songs { [build(:song)] }
     set { '1' }
     sequence(:position, 1)
-    audio_file { Rack::Test::UploadedFile.new('spec/fixtures/test.mp3', 'audio/mp3') }
 
     show
+
+    trait :with_audio_file do
+      after :create do |track|
+        track.audio_file.attach(
+          io: File.open("#{Rails.root}/spec/fixtures/test.mp3"),
+          filename: 'test.mp3',
+          content_type: 'audio/mpeg'
+        )
+      end
+    end
 
     trait :with_likes do
       after(:build) do |track|

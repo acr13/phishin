@@ -36,11 +36,12 @@ class @Player
     this._updatePlaylistMode()
     @$scrubber.slider 'enable'
     unless @playlist_mode or this._handleAutoPlayTrack()
-      if track_id = $('.playable_track').first().data 'id'
+      if track_id = $('.playable_track').first().data('id')
         unless @invoked
           path_segment = window.location.pathname.split('/')[1]
           this.setCurrentPlaylist track_id if path_segment isnt 'playlist' and path_segment isnt 'play'
-          this.playTrack track_id
+          url = $('.playable_track').first().data('url')
+          this.playTrack track_id, url
           # iOS doesn't allow auto-play
           if /(iPhone|iPad|iPod)/g.test(navigator.userAgent)
             this.togglePause()
@@ -110,14 +111,14 @@ class @Player
       @muted = true
     @sm.setVolume @active_track, value
 
-  playTrack: (track_id, time_marker=0) ->
+  playTrack: (track_id, url, time_marker=0) ->
     if track_id != @active_track
       @preload_started = false
       unless track_id and @sm_sound = @sm.getSoundById track_id
         this._hidePlayTooltip()
         @sm_sound = @sm.createSound
           id: track_id
-          url: this._trackIDtoURL track_id
+          url: url
           whileloading: =>
             this._updateLoadingState track_id
           whileplaying: =>
@@ -156,7 +157,7 @@ class @Player
         url: "/previous-track/#{@active_track}?playlist=#{@playlist}"
         success: (r) =>
           if r.success
-            this.playTrack r.track_id
+            this.playTrack r.track_id, r.track_url
           else
             @Util.feedback { alert: r.msg }
 
@@ -165,7 +166,7 @@ class @Player
       url: "/next-track/#{@active_track}?playlist=#{@playlist}"
       success: (r) =>
         if r.success
-          this.playTrack r.track_id
+          this.playTrack r.track_id, r.track_url
         else
           @Util.feedback { alert: r.msg }
 
@@ -220,9 +221,9 @@ class @Player
       url: "/random-song-track/#{song_id}"
       success: (r) =>
         if r.success
-          @Util.navigateTo r.url
+          @Util.navigateTo r.track_url
           this.setCurrentPlaylist r.track_id
-          this.playTrack r.track_id
+          this.playTrack r.track_id, r.track_url
 
   _loadInfoAndPlay: (track_id, time_marker) ->
     this._loadTrackInfo track_id
@@ -238,9 +239,10 @@ class @Player
         $el = $col.first()
         $('html,body').animate {scrollTop: $el.offset().top - 300}, 500
         if not @invoked
-          track_id = $el.data 'id'
+          track_id = $el.data('id')
+          url = $el.data('url')
           this.setCurrentPlaylist track_id
-          this.playTrack track_id, @time_marker
+          this.playTrack track_id, url, @time_marker
         else
           $el.addClass 'highlighted_track'
         true
@@ -255,16 +257,16 @@ class @Player
       success: (r) =>
         if r.success
           @Util.feedback { notice: 'Playing active playlist...'}
-          this.playTrack r.track_id
+          this.playTrack r.track_id, r.track_url
         else
           $.ajax
             url: "/random-show"
             success: (r) =>
               if r.success
                 @Util.feedback { notice: 'Playing random show...'}
-                @Util.navigateTo r.url
+                @Util.navigateTo r.track_url
                 this.setCurrentPlaylist r.track_id
-                # this.playTrack r.track_id
+                # this.playTrack r.track_id, r.track_url
 
   _disengagePlayer: ->
     if @active_track
@@ -274,12 +276,12 @@ class @Player
     @$scrubber.slider 'value', 0
     this._updatePlayButton false
 
-  _preloadTrack: (track_id) ->
+  _preloadTrack: (track_id, url) ->
     unless track_id and @sm.getSoundById track_id
       this._hidePlayTooltip()
       @sm.createSound
         id: track_id
-        url: this._trackIDtoURL track_id
+        url: url
         autoLoad: true
         whileloading: =>
           this._updateLoadingState track_id
@@ -330,7 +332,7 @@ class @Player
           $.ajax
             url: "/next-track/#{@active_track}"
             success: (r) =>
-              this._preloadTrack(r.track_id) if r.success
+              this._preloadTrack(r.track_id, r.track_url) if r.success
           @preload_started = true
         @$scrubber.slider 'value', (@sm_sound.position / @duration) * 100
         @$time_elapsed.html @Util.readableDuration(@sm_sound.position)
@@ -367,11 +369,6 @@ class @Player
         setTimeout( =>
           this._fastFadeout track_id
         , 10)
-
-  _trackIDtoURL: (track_id) ->
-    str = track_id.toString()
-    str = '0' + str for i in [0..(8-str.length)] by 1
-    "/audio/#{str[0..2]}/#{str[3..5]}/#{str[6..9]}/#{track_id}.mp3"
 
   _hidePlayTooltip: ->
     $('#playpause_tooltip').tooltip('destroy')

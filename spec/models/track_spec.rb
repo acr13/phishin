@@ -13,7 +13,7 @@ RSpec.describe Track do
   it { is_expected.to have_many(:tags).through(:track_tags) }
   it { is_expected.to have_many(:playlist_tracks).dependent(:destroy) }
 
-  it { is_expected.to have_attached_file(:audio_file) }
+  it { is_expected.to have_one_attached(:audio_file) }
 
   describe 'slug generation' do
     let(:slug) { 'new-slug' }
@@ -168,9 +168,14 @@ RSpec.describe Track do
     end
   end
 
-  it 'provides #mp3_url' do
-    track.id = 123_456_789
-    expect(track.mp3_url).to eq('http://localhost/audio/123/456/789/123456789.mp3')
+  describe '#audio_file_url' do
+    subject(:track) { create(:track, :with_audio_file) }
+
+    it 'provides the blob url' do
+      track.reload
+      key = track.audio_file.blob.key
+      expect(track.audio_file_url).to eq("#{APP_BASE_URL}/audio/#{key[0..1]}/#{key[2..3]}/#{key}")
+    end
   end
 
   describe 'serialization' do
@@ -186,7 +191,7 @@ RSpec.describe Track do
         set_name: track.set_name,
         likes_count: track.likes_count,
         slug: track.slug,
-        mp3: track.mp3_url,
+        mp3: track.audio_file_url,
         song_ids: track.songs.map(&:id),
         updated_at: track.updated_at.iso8601
       }
@@ -222,7 +227,7 @@ RSpec.describe Track do
         likes_count: track.likes_count,
         slug: track.slug,
         tags: tags.sort_by { |t| t[:priority] },
-        mp3: track.mp3_url,
+        mp3: track.audio_file_url,
         song_ids: track.songs.map(&:id),
         updated_at: track.updated_at.iso8601
       }

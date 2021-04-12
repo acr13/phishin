@@ -72,7 +72,7 @@
     ul#active_playlist.item_list
       - if @tracks
         - @tracks.each_with_index do |track, idx|
-          li.playable_track data-id=track.id data-track-duration=track.duration
+          li.playable_track data-id=track.id data-url=track.audio_file_url data-track-duration=track.duration
             .drag_arrows_vertical
               i.icon-resize-vertical
             h2.position_num = idx + 1

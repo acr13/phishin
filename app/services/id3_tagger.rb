@@ -15,7 +15,9 @@ class Id3Tagger
   private
 
   def apply_default_tags
-    Mp3Info.open(track.audio_file.path) do |mp3|
+    service = ActiveStorage::Service::DiskService.new(root: ENV['ACTIVESTORAGE_ROOT'])
+    path = service.send(:path_for, track.audio_file.blob.key)
+    Mp3Info.open(path) do |mp3|
       apply_tags(mp3)
       apply_v2_tags(mp3)
       mp3.tag2.remove_pictures

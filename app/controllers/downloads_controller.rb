@@ -19,7 +19,7 @@ class DownloadsController < ApplicationController
   end
 
   def download_track
-    raise ActiveRecord::RecordNotFound unless file_exists?
+    raise ActiveRecord::RecordNotFound unless track.audio_file.attached?
     send_audio_file
   end
 
@@ -27,21 +27,18 @@ class DownloadsController < ApplicationController
 
   def send_audio_file
     send_file(
-      track.audio_file.path,
+      track.audio_file.download,
       type: 'audio/mpeg',
       disposition: 'attachment',
       filename: "Phish #{track.show.date} #{track.title}.mp3",
-      length: File.size(track.audio_file.path)
+      length: track.audio_file.blob.byte_size
     )
-  end
-
-  def file_exists?
-    File.exist?(track.audio_file.path)
   end
 
   def track
     @track ||=
-      Track.includes(show: :venue)
+      Track.with_attached_audio_file
+           .includes(show: :venue)
            .find_by(id: params[:track_id])
   end
 

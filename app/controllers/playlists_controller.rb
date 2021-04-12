@@ -176,12 +176,12 @@ class PlaylistsController < ApplicationController
 
     if playlist_track_ids.last == params[:track_id].to_i
       if session[:loop]
-        render json: { success: true, track_id: playlist_track_ids.first }
+        render json: { success: true, track_id: playlist_track_ids.first url: '', } # TODO: add url
       else
         render json: { success: false, msg: 'End of playlist' }
       end
     elsif (idx = playlist_track_ids.find_index(params[:track_id].to_i))
-      render json: { success: true, track_id: playlist_track_ids[idx + 1] }
+      render json: { success: true, track_id: playlist_track_ids[idx + 1], url: '' } # TODO: add url
     else
       render json: { success: false, msg: 'track_id not in playlist' }
     end
@@ -196,12 +196,12 @@ class PlaylistsController < ApplicationController
 
     if playlist_track_ids.first == params[:track_id].to_i
       if session[:loop]
-        render json: { success: true, track_id: playlist_track_ids.last }
+        render json: { success: true, track_id: playlist_track_ids.last } # TODO: add url
       else
         render json: { success: false, msg: 'Beginning of playlist' }
       end
     elsif (idx = playlist_track_ids.find_index(params[:track_id].to_i))
-      render json: { success: true, track_id: playlist_track_ids[idx - 1] }
+      render json: { success: true, track_id: playlist_track_ids[idx - 1] } # TODO: add url
     else
       render json: { success: false, msg: 'track_id not in playlist' }
     end
@@ -232,18 +232,20 @@ class PlaylistsController < ApplicationController
 
   def random_show
     show = Show.random.first
+    track = show.tracks.order(position: :asc).first
     render json: {
       success: true,
       url: "/#{show.date}",
-      track_id: show.tracks.order(position: :asc).first.id
+      track_id: track.id,
+      track_url: track.audio_file_url
     }
   end
 
   def random_song_track
     if (song = Song.where(id: params[:song_id]).first)
-      track = song.tracks.sample
+      track = song.tracks.with_attached_audio_file.sample
       show = Show.find_by(id: track.show_id)
-      render json: { success: true, url: "/#{show.date}", track_id: track.id }
+      render json: { success: true, url: "/#{show.date}", track_id: track.id, track_url: track.audio_file_url }
     else
       render json: { success: false, msg: 'Invalid song_id' }
     end

@@ -15,7 +15,7 @@
     - elsif @tracks.any?
       ul.item_list
         - @tracks.each_with_index do |track, idx|
-          li.playable_track data-id=track.id
+          li.playable_track data-id=track.id data-url=track.audio_file_url
             h2.wide
               a href="/#{track.show.date}/#{track.slug}" = truncate(track.title, length: 44)
             h5

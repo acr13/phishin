@@ -225,7 +225,7 @@ $ ->
     if App.Player.playlist_mode and !clicked_from_playlist
       App.Playlist.addTrackToPlaylist $(this).data('id')
     else
-      App.Player.playTrack $(this).data('id')
+      App.Player.playTrack $(this).data('id'), $(this).data('url')
       unless clicked_from_playlist
         App.Player.setCurrentPlaylist $(this).data('id')
 
@@ -236,7 +236,8 @@ $ ->
     if App.Player.playlist_mode and !clicked_from_playlist
       App.Playlist.addTrackToPlaylist id
     else
-      App.Player.playTrack id
+      url = $(this).parents('.playable_track').data('url')
+      App.Player.playTrack id, url
       unless clicked_from_playlist
         App.Player.setCurrentPlaylist id
 
@@ -246,7 +247,7 @@ $ ->
     if App.Player.playlist_mode and !clicked_from_playlist
       App.Playlist.addTrackToPlaylist $(this).data('id')
     else
-      App.Player.playTrack $(this).data('id')
+      App.Player.playTrack $(this).data('id'), $(this).data('url')
       unless clicked_from_playlist
         App.Player.setCurrentPlaylist $(this).data('id')
 

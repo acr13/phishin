@@ -15,6 +15,6 @@ class Api::V1::TracksController < Api::V1::ApiController
   private
 
   def track_scope
-    Track.includes(:show, :songs, :tags)
+    Track.with_attached_audio_file.includes(:show, :songs, :tags)
   end
 end

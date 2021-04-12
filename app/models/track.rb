@@ -8,10 +8,7 @@ class Track < ApplicationRecord
   has_many :tags, through: :track_tags
   has_many :playlist_tracks, dependent: :destroy
 
-  has_attached_file(
-    :audio_file,
-    path: "#{APP_CONTENT_PATH}/:class/:attachment/:id_partition/:id.:extension"
-  )
+  has_one_attached :audio_file, service: :local, dependent: :destroy
 
   include PgSearch::Model
   pg_search_scope(
@@ -25,13 +22,11 @@ class Track < ApplicationRecord
     }
   )
 
-  do_not_validate_attachment_file_type :audio_file
   validates :position, :show, :title, :set, presence: true
   validates :position, uniqueness: { scope: :show_id }
   validates :songs, length: { minimum: 1 }
 
   before_validation :generate_slug
-  after_commit :save_duration, on: :create
 
   scope :chronological, -> { joins(:show).order('shows.date') }
   scope :tagged_with, ->(tag_slug) { joins(:tags).where(tags: { slug: tag_slug }) }
@@ -53,12 +48,15 @@ class Track < ApplicationRecord
     self.slug = TrackSlugGenerator.new(self).call
   end
 
-  def mp3_url
-    "#{APP_BASE_URL}/audio/#{partitioned_id}/#{id}.mp3"
+  def audio_file_url
+    key = audio_file.blob.key
+    "#{APP_BASE_URL}/audio/#{key[0..1]}/#{key[2..3]}/#{key}"
   end
 
   def save_duration
-    update(duration: Mp3DurationQuery.new(audio_file.path).call)
+    service = ActiveStorage::Service::DiskService.new(root: ENV['ACTIVESTORAGE_ROOT'])
+    path = service.send(:path_for, audio_file.blob.key)
+    update(duration: Mp3DurationQuery.new(path).call)
   end
 
   def as_json # rubocop:disable Metrics/MethodLength
@@ -72,7 +70,7 @@ class Track < ApplicationRecord
       set_name: set_name,
       likes_count: likes_count,
       slug: slug,
-      mp3: mp3_url,
+      mp3: audio_file_url,
       song_ids: songs.map(&:id),
       updated_at: updated_at.iso8601
     }
@@ -94,7 +92,7 @@ class Track < ApplicationRecord
       likes_count: likes_count,
       slug: slug,
       tags: track_tags_for_api,
-      mp3: mp3_url,
+      mp3: audio_file_url,
       song_ids: songs.map(&:id),
       updated_at: updated_at.iso8601
     }
