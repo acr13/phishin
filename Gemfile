@@ -3,6 +3,7 @@ source 'https://rubygems.org'
 ruby '2.7.3'
 
 gem 'actionpack-action_caching', github: 'rails/actionpack-action_caching'
+gem 'aws-sdk-s3'
 gem 'bootstrap-will_paginate'
 gem 'coffee-rails'
 gem 'dalli'
