@@ -6,7 +6,11 @@ namespace :storage do
     relation = 
       Track.unscoped
            .where(storage_converted_at: nil)
+<<<<<<< HEAD
            .where('id >= ? AND id <= ?', 34_003, 34_013)
+=======
+           .where('id > ? AND id < ?', 34_003, 34_013)
+>>>>>>> 94e6d51 (ActiveStorage conversion phase 1)
            .order(id: :asc)
     pbar = ProgressBar.create(total: relation.count, format: '%a %B %c/%C %p%% %E')
 
@@ -42,7 +46,7 @@ namespace :storage do
             filename,
             track.audio_file.content_type,
             track.audio_file.size,
-            Digest::MD5.file(audio_file_path).base64digest,
+            Digest::MD5.base64digest(File.read(audio_file_path)),
             track.updated_at.iso8601
           ]
         )
