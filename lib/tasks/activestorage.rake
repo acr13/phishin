@@ -18,7 +18,7 @@ namespace :storage do
       <<~SQL.squish
         INSERT INTO active_storage_blobs (
           key, filename, content_type, metadata, byte_size, checksum, created_at, service_name
-        ) VALUES ($1, $2, $3, '{"identified":true,"analyzed":true}', $4, $5, $6, 'local')
+        ) VALUES ($1, $2, $3, '{}', $4, $5, $6, 'local')
       SQL
     attachment_sql =
       <<~SQL.squish
