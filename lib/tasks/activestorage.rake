@@ -18,7 +18,7 @@ namespace :storage do
       <<~SQL.squish
         INSERT INTO active_storage_blobs (
           key, filename, content_type, metadata, byte_size, checksum, created_at, service_name
-        ) VALUES ($1, $2, $3, '{}', $4, $5, $6, 'local')
+        ) VALUES ($1, $2, $3, '{}', $4, $5, $6, 'Disk')
       SQL
     attachment_sql =
       <<~SQL.squish
@@ -60,7 +60,7 @@ namespace :storage do
         )
 
         # Copy file from local storage to S3
-        new_folder = "#{ENV['ACTIVESTORAGE_ROOT']}/#{blob_key[0..1]}/#{blob_key[2..3]}"
+        new_folder = "#{Rails.root}/storage/#{blob_key[0..1]}/#{blob_key[2..3]}"
         FileUtils.mkdir_p(new_folder)
         FileUtils.cp(audio_file_path, "#{new_folder}/#{blob_key}")
 
